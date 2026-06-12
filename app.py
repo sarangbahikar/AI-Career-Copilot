@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
 from utils.pdf_parser import extract_text
 from utils.skill_extractor import extract_skills
@@ -11,7 +12,6 @@ from utils.strengths import get_strengths
 from utils.weaknesses import get_weaknesses
 from utils.recommendations import get_recommendations
 from utils.job_recommender import recommend_roles
-
 
 st.set_page_config(
     page_title="AI Career Copilot",
@@ -31,19 +31,21 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file:
 
-    # Extract Resume Text
+    # ==================================
+    # EXTRACT TEXT
+    # ==================================
 
-    text = extract_text(
-        uploaded_file
-    )
+    text = extract_text(uploaded_file)
 
-    # Extract Skills
+    # ==================================
+    # SKILLS
+    # ==================================
 
-    skills = extract_skills(
-        text
-    )
+    skills = extract_skills(text)
 
-    # ATS Score
+    # ==================================
+    # ATS SCORE
+    # ==================================
 
     score_data = calculate_ats_score(
         text,
@@ -52,72 +54,120 @@ if uploaded_file:
 
     score = score_data["total"]
 
-    # Missing Skills
+    # ==================================
+    # ANALYSIS MODULES
+    # ==================================
 
     missing_skills = find_missing_skills(
         skills
     )
-
-    # Strengths
 
     strengths = get_strengths(
         text,
         skills
     )
 
-    # Weaknesses
-
     weaknesses = get_weaknesses(
         text
     )
 
-    # Recommendations
-
     recommendations = get_recommendations(
         weaknesses
     )
-
-    # Job Recommendations
 
     recommended_roles = recommend_roles(
         skills
     )
 
     # ==================================
-    # DASHBOARD HEADER
+    # ATS DASHBOARD
     # ==================================
 
     st.subheader("📊 ATS Dashboard")
 
     col1, col2 = st.columns(2)
 
+    # ---------------------------
+    # Gauge Meter
+    # ---------------------------
+
     with col1:
+
+        gauge = go.Figure(
+
+            go.Indicator(
+
+                mode="gauge+number",
+
+                value=score,
+
+                title={
+                    "text": "ATS Score"
+                },
+
+                gauge={
+
+                    "axis": {
+                        "range": [0, 100]
+                    },
+
+                    "bar": {
+                        "thickness": 0.4
+                    },
+
+                    "steps": [
+
+                        {
+                            "range": [0, 50],
+                            "color": "lightgray"
+                        },
+
+                        {
+                            "range": [50, 80],
+                            "color": "gray"
+                        },
+
+                        {
+                            "range": [80, 100],
+                            "color": "darkgreen"
+                        }
+
+                    ]
+                }
+            )
+        )
+
+        st.plotly_chart(
+            gauge,
+            use_container_width=True
+        )
+
+    # ---------------------------
+    # ATS Summary
+    # ---------------------------
+
+    with col2:
 
         st.metric(
             "ATS Score",
             f"{score}/100"
         )
 
-    with col2:
-
         if score >= 80:
 
-            st.metric(
-                "Resume Rating",
-                "Excellent"
+            st.success(
+                "Excellent Resume"
             )
 
         elif score >= 60:
 
-            st.metric(
-                "Resume Rating",
-                "Good"
+            st.warning(
+                "Good Resume"
             )
 
         else:
 
-            st.metric(
-                "Resume Rating",
+            st.error(
                 "Needs Improvement"
             )
 
@@ -159,6 +209,8 @@ if uploaded_file:
 
         x="Category",
         y="Score",
+
+        text="Score",
 
         title="ATS Score Breakdown"
 
@@ -243,9 +295,7 @@ if uploaded_file:
 
         for item in strengths:
 
-            st.success(
-                item
-            )
+            st.success(item)
 
     else:
 
@@ -265,9 +315,7 @@ if uploaded_file:
 
         for item in weaknesses:
 
-            st.warning(
-                item
-            )
+            st.warning(item)
 
     else:
 
@@ -287,9 +335,7 @@ if uploaded_file:
 
         for role in recommended_roles:
 
-            st.success(
-                role
-            )
+            st.success(role)
 
     else:
 
@@ -309,9 +355,7 @@ if uploaded_file:
 
         for item in recommendations:
 
-            st.info(
-                item
-            )
+            st.info(item)
 
     else:
 
