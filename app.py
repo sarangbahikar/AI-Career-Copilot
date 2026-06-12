@@ -14,6 +14,7 @@ from utils.recommendations import get_recommendations
 from utils.job_recommender import recommend_roles
 from utils.interview_generator_v2 import generate_interview_questions
 from utils.roadmap_generator import generate_roadmap
+from utils.pdf_report import create_report
 # ==================================
 # PAGE CONFIG
 # ==================================
@@ -88,8 +89,17 @@ if uploaded_file:
         skills,
         text
     )
+    
     roadmap = generate_roadmap(
     recommended_roles
+    )
+    
+    create_report(
+    "career_report.pdf",
+    score,
+    skills,
+    recommended_roles,
+    roadmap
     )
 
     # ==================================
@@ -433,6 +443,22 @@ Future versions will include:
         st.success(
             "No recommendations needed"
         )
+        
+    st.subheader(
+    "📥 Download Report"
+    )
+
+    with open(
+    "career_report.pdf",
+    "rb"
+) as file:
+
+        st.download_button(
+            label="Download Career Report",
+            data=file,
+            file_name="career_report.pdf",
+            mime="application/pdf"
+    )
 
     # ==================================
     # RESUME CONTENT

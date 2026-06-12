@@ -325,6 +325,7 @@ queuelib @ file:///opt/miniconda3/conda-bld/queuelib_1762896904332/work
 readchar @ file:///opt/miniconda3/conda-bld/readchar_1760613300945/work
 referencing @ file:///opt/miniconda3/conda-bld/referencing_1762536885350/work
 regex @ file:///opt/miniconda3/conda-bld/regex_1758888024237/work
+reportlab==4.5.1
 requests==2.34.2
 requests-file @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_bfbabejyv2/croot/requests-file_1749719739174/work
 requests-toolbelt @ file:///Users/builder/cbouss/perseverance-python-buildout/croot/requests-toolbelt_1731721330284/work
