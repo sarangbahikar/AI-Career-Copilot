@@ -12,6 +12,11 @@ from utils.strengths import get_strengths
 from utils.weaknesses import get_weaknesses
 from utils.recommendations import get_recommendations
 from utils.job_recommender import recommend_roles
+from utils.interview_generator_v2 import generate_interview_questions
+from utils.roadmap_generator import generate_roadmap
+# ==================================
+# PAGE CONFIG
+# ==================================
 
 st.set_page_config(
     page_title="AI Career Copilot",
@@ -21,31 +26,33 @@ st.set_page_config(
 
 st.title("🚀 AI Career Copilot")
 st.markdown(
-    "### Resume Intelligence & Career Guidance Platform"
+    "### Resume Intelligence & Interview Preparation Platform"
 )
+
+# ==================================
+# FILE UPLOAD
+# ==================================
 
 uploaded_file = st.file_uploader(
     "Upload Resume",
     type=["pdf"]
 )
 
+# ==================================
+# MAIN APP
+# ==================================
+
 if uploaded_file:
 
-    # ==================================
-    # EXTRACT TEXT
-    # ==================================
+    # Resume Text
 
     text = extract_text(uploaded_file)
 
-    # ==================================
-    # SKILLS
-    # ==================================
+    # Skills
 
     skills = extract_skills(text)
 
-    # ==================================
-    # ATS SCORE
-    # ==================================
+    # ATS Score
 
     score_data = calculate_ats_score(
         text,
@@ -54,9 +61,7 @@ if uploaded_file:
 
     score = score_data["total"]
 
-    # ==================================
-    # ANALYSIS MODULES
-    # ==================================
+    # Analysis
 
     missing_skills = find_missing_skills(
         skills
@@ -79,6 +84,31 @@ if uploaded_file:
         skills
     )
 
+    interview_questions = generate_interview_questions(
+        skills,
+        text
+    )
+    roadmap = generate_roadmap(
+    recommended_roles
+    )
+
+    # ==================================
+    # AI FEEDBACK PLACEHOLDER
+    # ==================================
+
+    ai_feedback = """
+### ⚠ AI Feedback Temporarily Disabled
+
+Gemini API quota is currently unavailable.
+
+Future versions will include:
+
+- AI Resume Review
+- ATS Optimization Suggestions
+- AI Career Guidance
+- Personalized Feedback
+"""
+
     # ==================================
     # ATS DASHBOARD
     # ==================================
@@ -86,10 +116,6 @@ if uploaded_file:
     st.subheader("📊 ATS Dashboard")
 
     col1, col2 = st.columns(2)
-
-    # ---------------------------
-    # Gauge Meter
-    # ---------------------------
 
     with col1:
 
@@ -141,10 +167,6 @@ if uploaded_file:
             gauge,
             use_container_width=True
         )
-
-    # ---------------------------
-    # ATS Summary
-    # ---------------------------
 
     with col2:
 
@@ -295,13 +317,9 @@ if uploaded_file:
 
         for item in strengths:
 
-            st.success(item)
-
-    else:
-
-        st.info(
-            "No major strengths detected"
-        )
+            st.success(
+                item
+            )
 
     # ==================================
     # WEAKNESSES
@@ -315,7 +333,9 @@ if uploaded_file:
 
         for item in weaknesses:
 
-            st.warning(item)
+            st.warning(
+                item
+            )
 
     else:
 
@@ -335,13 +355,62 @@ if uploaded_file:
 
         for role in recommended_roles:
 
-            st.success(role)
+            st.success(
+                role
+            )
 
     else:
 
         st.info(
             "No matching role found"
         )
+
+    # ==================================
+    # INTERVIEW PREPARATION
+    # ==================================
+
+    st.subheader(
+        "🎤 Interview Preparation"
+    )
+
+    st.markdown("### Technical Questions")
+
+    for q in interview_questions["technical"]:
+        st.info(q)
+
+    st.markdown("### Project Questions")
+
+    for q in interview_questions["project"]:
+        st.info(q)
+
+    st.markdown("### HR Questions")
+
+    for q in interview_questions["hr"]:
+        st.info(q)
+
+    # ==================================
+    # LEARNING ROADMAP
+    # ==================================
+
+    st.subheader(
+        "🗺️ Learning Roadmap"
+    )
+
+    for step in roadmap:
+
+        st.success(step)
+        
+    # ==================================
+    # AI FEEDBACK
+    # ==================================
+
+    st.subheader(
+        "🤖 AI Resume Feedback"
+    )
+
+    st.markdown(
+        ai_feedback
+    )
 
     # ==================================
     # RECOMMENDATIONS
@@ -355,7 +424,9 @@ if uploaded_file:
 
         for item in recommendations:
 
-            st.info(item)
+            st.info(
+                item
+            )
 
     else:
 
