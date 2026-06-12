@@ -1,13 +1,24 @@
 def calculate_ats_score(text, skills):
 
-    score = 0
-
     text = text.lower()
 
-    # Skills
-    score += min(len(skills) * 3, 30)
+    breakdown = {
+        "skills": 0,
+        "education": 0,
+        "projects": 0,
+        "experience": 0,
+        "certifications": 0
+    }
 
-    # Education
+    # Skills (30)
+
+    breakdown["skills"] = min(
+        len(skills) * 3,
+        30
+    )
+
+    # Education (20)
+
     education_keywords = [
         "bachelor",
         "master",
@@ -16,19 +27,40 @@ def calculate_ats_score(text, skills):
         "college"
     ]
 
-    if any(word in text for word in education_keywords):
-        score += 20
+    if any(
+        word in text
+        for word in education_keywords
+    ):
+        breakdown["education"] = 20
 
-    # Projects
+    # Projects (20)
+
     if "project" in text:
-        score += 20
+        breakdown["projects"] = 20
 
-    # Certifications
-    if "certification" in text or "certificate" in text:
-        score += 15
+    # Experience (15)
 
-    # Experience
-    if "experience" in text or "internship" in text:
-        score += 15
+    if (
+        "experience" in text or
+        "internship" in text
+    ):
+        breakdown["experience"] = 15
 
-    return min(score, 100)
+    # Certifications (15)
+
+    if (
+        "certification" in text or
+        "certificate" in text
+    ):
+        breakdown["certifications"] = 15
+
+    total = sum(
+        breakdown.values()
+    )
+
+    breakdown["total"] = min(
+        total,
+        100
+    )
+
+    return breakdown

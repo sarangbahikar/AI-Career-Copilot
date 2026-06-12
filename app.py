@@ -1,4 +1,6 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
 
 from utils.pdf_parser import extract_text
 from utils.skill_extractor import extract_skills
@@ -8,6 +10,7 @@ from utils.missing_skills import find_missing_skills
 from utils.strengths import get_strengths
 from utils.weaknesses import get_weaknesses
 from utils.recommendations import get_recommendations
+from utils.job_recommender import recommend_roles
 
 
 st.set_page_config(
@@ -17,7 +20,9 @@ st.set_page_config(
 )
 
 st.title("🚀 AI Career Copilot")
-st.markdown("### Resume Intelligence & Career Guidance Platform")
+st.markdown(
+    "### Resume Intelligence & Career Guidance Platform"
+)
 
 uploaded_file = st.file_uploader(
     "Upload Resume",
@@ -27,119 +32,303 @@ uploaded_file = st.file_uploader(
 if uploaded_file:
 
     # Extract Resume Text
-    text = extract_text(uploaded_file)
-    st.subheader("Debug Resume Text")
-    st.text_area("Extracted Text", text, height=500)
-    
+
+    text = extract_text(
+        uploaded_file
+    )
+
     # Extract Skills
-    skills = extract_skills(text)
+
+    skills = extract_skills(
+        text
+    )
 
     # ATS Score
-    score = calculate_ats_score(text, skills)
+
+    score_data = calculate_ats_score(
+        text,
+        skills
+    )
+
+    score = score_data["total"]
 
     # Missing Skills
-    missing_skills = find_missing_skills(skills)
+
+    missing_skills = find_missing_skills(
+        skills
+    )
 
     # Strengths
-    strengths = get_strengths(text, skills)
+
+    strengths = get_strengths(
+        text,
+        skills
+    )
 
     # Weaknesses
-    weaknesses = get_weaknesses(text)
+
+    weaknesses = get_weaknesses(
+        text
+    )
 
     # Recommendations
+
     recommendations = get_recommendations(
         weaknesses
     )
 
-    # ATS Score Section
-    st.subheader("📊 ATS Score")
+    # Job Recommendations
 
-    st.metric(
-        "ATS Score",
-        f"{score}/100"
+    recommended_roles = recommend_roles(
+        skills
     )
 
-    # Resume Analysis
-    st.subheader("📋 Resume Analysis")
+    # ==================================
+    # DASHBOARD HEADER
+    # ==================================
+
+    st.subheader("📊 ATS Dashboard")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.metric(
+            "ATS Score",
+            f"{score}/100"
+        )
+
+    with col2:
+
+        if score >= 80:
+
+            st.metric(
+                "Resume Rating",
+                "Excellent"
+            )
+
+        elif score >= 60:
+
+            st.metric(
+                "Resume Rating",
+                "Good"
+            )
+
+        else:
+
+            st.metric(
+                "Resume Rating",
+                "Needs Improvement"
+            )
+
+    # ==================================
+    # SCORE BREAKDOWN
+    # ==================================
+
+    st.subheader(
+        "📈 Score Breakdown"
+    )
+
+    breakdown_df = pd.DataFrame({
+
+        "Category": [
+
+            "Skills",
+            "Education",
+            "Projects",
+            "Experience",
+            "Certifications"
+
+        ],
+
+        "Score": [
+
+            score_data["skills"],
+            score_data["education"],
+            score_data["projects"],
+            score_data["experience"],
+            score_data["certifications"]
+
+        ]
+
+    })
+
+    fig = px.bar(
+
+        breakdown_df,
+
+        x="Category",
+        y="Score",
+
+        title="ATS Score Breakdown"
+
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+    # ==================================
+    # RESUME ANALYSIS
+    # ==================================
+
+    st.subheader(
+        "📋 Resume Analysis"
+    )
 
     if score >= 80:
+
         st.success(
             "Excellent Resume"
         )
 
     elif score >= 60:
+
         st.warning(
             "Good Resume but can be improved"
         )
 
     else:
+
         st.error(
             "Resume needs improvement"
         )
 
-    # Skills Section
-    st.subheader("🛠 Detected Skills")
+    # ==================================
+    # DETECTED SKILLS
+    # ==================================
+
+    st.subheader(
+        "🛠 Detected Skills"
+    )
 
     for skill in skills:
-        st.success(f"✓ {skill}")
 
-    # Missing Skills Section
-    st.subheader("❌ Missing Skills")
+        st.success(
+            f"✓ {skill}"
+        )
+
+    # ==================================
+    # MISSING SKILLS
+    # ==================================
+
+    st.subheader(
+        "❌ Missing Skills"
+    )
 
     if missing_skills:
 
         for skill in missing_skills:
-            st.warning(f"⚠ {skill}")
+
+            st.warning(
+                f"⚠ {skill}"
+            )
 
     else:
+
         st.success(
             "No missing skills found"
         )
 
-    # Strengths Section
-    st.subheader("💪 Strengths")
+    # ==================================
+    # STRENGTHS
+    # ==================================
+
+    st.subheader(
+        "💪 Strengths"
+    )
 
     if strengths:
 
         for item in strengths:
-            st.success(item)
+
+            st.success(
+                item
+            )
 
     else:
+
         st.info(
             "No major strengths detected"
         )
 
-    # Weaknesses Section
-    st.subheader("⚠ Weaknesses")
+    # ==================================
+    # WEAKNESSES
+    # ==================================
+
+    st.subheader(
+        "⚠ Weaknesses"
+    )
 
     if weaknesses:
 
         for item in weaknesses:
-            st.warning(item)
+
+            st.warning(
+                item
+            )
 
     else:
+
         st.success(
             "No major weaknesses found"
         )
 
-    # Recommendations Section
-    st.subheader("🚀 Recommendations")
+    # ==================================
+    # JOB RECOMMENDATIONS
+    # ==================================
+
+    st.subheader(
+        "🎯 Recommended Roles"
+    )
+
+    if recommended_roles:
+
+        for role in recommended_roles:
+
+            st.success(
+                role
+            )
+
+    else:
+
+        st.info(
+            "No matching role found"
+        )
+
+    # ==================================
+    # RECOMMENDATIONS
+    # ==================================
+
+    st.subheader(
+        "🚀 Recommendations"
+    )
 
     if recommendations:
 
         for item in recommendations:
-            st.info(item)
+
+            st.info(
+                item
+            )
 
     else:
+
         st.success(
             "No recommendations needed"
         )
 
-    # Resume Content
-    st.subheader("📄 Resume Content")
+    # ==================================
+    # RESUME CONTENT
+    # ==================================
 
-    st.text_area(
-        "",
-        text,
-        height=300
-    )
+    with st.expander(
+        "📄 View Resume Content"
+    ):
+
+        st.text_area(
+            "",
+            text,
+            height=300
+        )
