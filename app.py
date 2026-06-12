@@ -15,6 +15,7 @@ from utils.job_recommender import recommend_roles
 from utils.interview_generator_v2 import generate_interview_questions
 from utils.roadmap_generator import generate_roadmap
 from utils.pdf_report import create_report
+from utils.jd_matcher import calculate_jd_match
 # ==================================
 # PAGE CONFIG
 # ==================================
@@ -37,6 +38,11 @@ st.markdown(
 uploaded_file = st.file_uploader(
     "Upload Resume",
     type=["pdf"]
+)
+
+job_description = st.text_area(
+    "📄 Paste Job Description Here",
+    height=200
 )
 
 # ==================================
@@ -93,6 +99,15 @@ if uploaded_file:
     roadmap = generate_roadmap(
     recommended_roles
     )
+    
+    jd_result = None
+
+    if job_description:
+
+        jd_result = calculate_jd_match(
+            skills,
+            job_description
+        )
     
     create_report(
     "career_report.pdf",
@@ -409,7 +424,42 @@ Future versions will include:
     for step in roadmap:
 
         st.success(step)
-        
+    
+    # ==================================
+    # RESUME VS JD MATCHING
+    # ==================================
+
+    if jd_result:
+
+        st.subheader(
+            "🎯 Resume vs Job Match"
+        )
+
+        st.metric(
+            "Match Score",
+            f"{jd_result['score']}%"
+        )
+
+        st.markdown(
+            "### ✅ Matching Skills"
+        )
+
+        for skill in jd_result["matched"]:
+
+            st.success(
+                skill
+            )
+
+        st.markdown(
+            "### ❌ Missing Skills"
+        )
+
+        for skill in jd_result["missing"]:
+
+            st.warning(
+                skill
+            )
+                
     # ==================================
     # AI FEEDBACK
     # ==================================
@@ -444,21 +494,28 @@ Future versions will include:
             "No recommendations needed"
         )
         
+    # ==================================
+    # DOWNLOAD REPORT
+    # ==================================
+
     st.subheader(
-    "📥 Download Report"
+        "📥 Download Report"
     )
 
     with open(
-    "career_report.pdf",
-    "rb"
-) as file:
+        "career_report.pdf",
+        "rb"
+    ) as file:
 
         st.download_button(
             label="Download Career Report",
             data=file,
             file_name="career_report.pdf",
-            mime="application/pdf"
-    )
+            mime="application/pdf",
+            key="career_report_download"
+        )
+
+
 
     # ==================================
     # RESUME CONTENT
