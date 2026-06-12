@@ -12,10 +12,11 @@ from utils.strengths import get_strengths
 from utils.weaknesses import get_weaknesses
 from utils.recommendations import get_recommendations
 from utils.job_recommender import recommend_roles
-from utils.interview_generator_v2 import generate_interview_questions
 from utils.roadmap_generator import generate_roadmap
 from utils.pdf_report import create_report
 from utils.jd_matcher import calculate_jd_match
+from utils.groq_feedback import generate_feedback
+from utils.interview_generator_ai import generate_interview_questions_ai
 # ==================================
 # PAGE CONFIG
 # ==================================
@@ -91,10 +92,20 @@ if uploaded_file:
         skills
     )
 
-    interview_questions = generate_interview_questions(
-        skills,
-        text
-    )
+
+    try:
+
+        interview_questions_ai = (
+            generate_interview_questions_ai(
+                text
+            )
+        )
+
+    except Exception as e:
+
+        interview_questions_ai = (
+            f"Error: {str(e)}"
+        )
     
     roadmap = generate_roadmap(
     recommended_roles
@@ -121,18 +132,20 @@ if uploaded_file:
     # AI FEEDBACK PLACEHOLDER
     # ==================================
 
-    ai_feedback = """
-### ⚠ AI Feedback Temporarily Disabled
+    try:
 
-Gemini API quota is currently unavailable.
+        ai_feedback = generate_feedback(
+            text
+        )
 
-Future versions will include:
+    except Exception as e:
 
-- AI Resume Review
-- ATS Optimization Suggestions
-- AI Career Guidance
-- Personalized Feedback
-"""
+        ai_feedback = f"""
+    AI Feedback Unavailable
+
+    Error:
+    {str(e)}
+    """
 
     # ==================================
     # ATS DASHBOARD
@@ -390,40 +403,114 @@ Future versions will include:
             "No matching role found"
         )
 
+
     # ==================================
-    # INTERVIEW PREPARATION
+    # AI INTERVIEW PREPARATION
     # ==================================
 
     st.subheader(
-        "🎤 Interview Preparation"
+        "🤖 AI Interview Preparation"
     )
 
-    st.markdown("### Technical Questions")
+    try:
 
-    for q in interview_questions["technical"]:
-        st.info(q)
+        sections = interview_questions_ai.split(
+            "PROJECT:"
+        )
 
-    st.markdown("### Project Questions")
+        technical_part = sections[0]
 
-    for q in interview_questions["project"]:
-        st.info(q)
+        project_hr = ""
 
-    st.markdown("### HR Questions")
+        if len(sections) > 1:
 
-    for q in interview_questions["hr"]:
-        st.info(q)
+            project_hr = sections[1]
 
+        project_sections = project_hr.split(
+            "HR:"
+        )
+
+        project_part = project_sections[0]
+
+        hr_part = ""
+
+        if len(project_sections) > 1:
+
+            hr_part = project_sections[1]
+
+        # -------------------------
+        # TECHNICAL
+        # -------------------------
+
+        st.markdown(
+            "### 💻 Technical Questions"
+        )
+
+        for line in technical_part.split("\n"):
+
+            if "-" in line:
+
+                question = (
+                    line.replace("-", "")
+                    .strip()
+                )
+
+                st.info(question)
+
+        # -------------------------
+        # PROJECT
+        # -------------------------
+
+        st.markdown(
+            "### 🚀 Project Questions"
+        )
+
+        for line in project_part.split("\n"):
+
+            if "-" in line:
+
+                question = (
+                    line.replace("-", "")
+                    .strip()
+                )
+
+                st.success(question)
+
+        # -------------------------
+        # HR
+        # -------------------------
+
+        st.markdown(
+            "### 👨‍💼 HR Questions"
+        )
+
+        for line in hr_part.split("\n"):
+
+            if "-" in line:
+
+                question = (
+                    line.replace("-", "")
+                    .strip()
+                )
+
+                st.warning(question)
+
+    except Exception:
+
+        st.markdown(
+            interview_questions_ai
+        )
     # ==================================
     # LEARNING ROADMAP
     # ==================================
 
     st.subheader(
-        "🗺️ Learning Roadmap"
-    )
+            "🗺️ Learning Roadmap"
+        )
 
     for step in roadmap:
 
-        st.success(step)
+            st.success(step)
     
     # ==================================
     # RESUME VS JD MATCHING
@@ -514,7 +601,6 @@ Future versions will include:
             mime="application/pdf",
             key="career_report_download"
         )
-
 
 
     # ==================================

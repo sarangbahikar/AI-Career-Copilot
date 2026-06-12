@@ -2,6 +2,11 @@ def generate_interview_questions(skills, text):
 
     text = text.lower()
 
+    skills = [
+        skill.lower()
+        for skill in skills
+    ]
+
     technical = []
     project = []
     hr = []
