@@ -8,9 +8,6 @@ from utils.skill_extractor import extract_skills
 from utils.ats_score import calculate_ats_score
 from utils.missing_skills import find_missing_skills
 
-from utils.strengths import get_strengths
-from utils.weaknesses import get_weaknesses
-from utils.recommendations import get_recommendations
 from utils.job_recommender import recommend_roles
 from utils.roadmap_generator import generate_roadmap
 from utils.pdf_report import create_report
@@ -75,18 +72,7 @@ if uploaded_file:
         skills
     )
 
-    strengths = get_strengths(
-        text,
-        skills
-    )
 
-    weaknesses = get_weaknesses(
-        text
-    )
-
-    recommendations = get_recommendations(
-        weaknesses
-    )
 
     recommended_roles = recommend_roles(
         skills
@@ -343,65 +329,6 @@ if uploaded_file:
             "No missing skills found"
         )
 
-    # ==================================
-    # STRENGTHS
-    # ==================================
-
-    st.subheader(
-        "💪 Strengths"
-    )
-
-    if strengths:
-
-        for item in strengths:
-
-            st.success(
-                item
-            )
-
-    # ==================================
-    # WEAKNESSES
-    # ==================================
-
-    st.subheader(
-        "⚠ Weaknesses"
-    )
-
-    if weaknesses:
-
-        for item in weaknesses:
-
-            st.warning(
-                item
-            )
-
-    else:
-
-        st.success(
-            "No major weaknesses found"
-        )
-
-    # ==================================
-    # JOB RECOMMENDATIONS
-    # ==================================
-
-    st.subheader(
-        "🎯 Recommended Roles"
-    )
-
-    if recommended_roles:
-
-        for role in recommended_roles:
-
-            st.success(
-                role
-            )
-
-    else:
-
-        st.info(
-            "No matching role found"
-        )
 
 
     # ==================================
@@ -559,27 +486,6 @@ if uploaded_file:
         ai_feedback
     )
 
-    # ==================================
-    # RECOMMENDATIONS
-    # ==================================
-
-    st.subheader(
-        "🚀 Recommendations"
-    )
-
-    if recommendations:
-
-        for item in recommendations:
-
-            st.info(
-                item
-            )
-
-    else:
-
-        st.success(
-            "No recommendations needed"
-        )
         
     # ==================================
     # DOWNLOAD REPORT
