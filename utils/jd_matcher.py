@@ -1,3 +1,6 @@
+import re
+
+
 def calculate_jd_match(
     resume_skills,
     job_description
@@ -78,9 +81,7 @@ def calculate_jd_match(
     ]
 
     required_skills = []
-
     matched_skills = []
-
     missing_skills = []
 
     # ---------------------------------
@@ -89,11 +90,26 @@ def calculate_jd_match(
 
     for skill in common_skills:
 
-        if skill in job_description:
+        if len(skill.split()) == 1:
 
-            required_skills.append(
-                skill
+            words = re.findall(
+                r"\b\w+\b",
+                job_description
             )
+
+            if skill.lower() in words:
+
+                required_skills.append(
+                    skill
+                )
+
+        else:
+
+            if skill.lower() in job_description:
+
+                required_skills.append(
+                    skill
+                )
 
     # ---------------------------------
     # Match with Resume Skills
@@ -101,7 +117,7 @@ def calculate_jd_match(
 
     for skill in required_skills:
 
-        if skill in resume_skills_lower:
+        if skill.lower() in resume_skills_lower:
 
             matched_skills.append(
                 skill
@@ -114,10 +130,10 @@ def calculate_jd_match(
             )
 
     # ---------------------------------
-    # Calculate Match Score
+    # Match Score
     # ---------------------------------
 
-    if len(required_skills) > 0:
+    if required_skills:
 
         score = int(
             (
@@ -135,13 +151,11 @@ def calculate_jd_match(
     # Suggestions
     # ---------------------------------
 
-    suggestions = []
+    suggestions = [
 
-    for skill in missing_skills:
-
-        suggestions.append(
-            f"Consider learning {skill.title()}"
-        )
+        f"Consider learning {skill.title()}"
+        for skill in missing_skills
+    ]
 
     return {
 

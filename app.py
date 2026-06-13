@@ -132,7 +132,41 @@ if uploaded_file:
     Error:
     {str(e)}
     """
+    # ==================================
+    # QUICK STATS
+    # ==================================
 
+    jd_score = 0
+
+    if jd_result:
+        jd_score = jd_result["score"]
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric(
+            "ATS Score",
+            f"{score}%"
+        )
+
+    with col2:
+        st.metric(
+            "JD Match",
+            f"{jd_score}%"
+        )
+
+    with col3:
+        st.metric(
+            "Skills Found",
+            len(skills)
+        )
+
+    with col4:
+        st.metric(
+            "Recommended Roles",
+            len(recommended_roles)
+        )
+        
     # ==================================
     # ATS DASHBOARD
     # ==================================
@@ -301,11 +335,13 @@ if uploaded_file:
         "🛠 Detected Skills"
     )
 
-    for skill in skills:
+    skills_text = " | ".join(
+        sorted(skills)
+    )
 
-        st.success(
-            f"✓ {skill}"
-        )
+    st.info(
+        skills_text
+    )
 
     # ==================================
     # MISSING SKILLS
@@ -317,11 +353,13 @@ if uploaded_file:
 
     if missing_skills:
 
-        for skill in missing_skills:
+        missing_text = " | ".join(
+            jd_result["missing"]
+        )
 
-            st.warning(
-                f"⚠ {skill}"
-            )
+        st.warning(
+            missing_text
+        )
 
     else:
 
@@ -336,7 +374,7 @@ if uploaded_file:
     # ==================================
 
     st.subheader(
-        "🤖 AI Interview Preparation"
+        "🎤 AI Interview Preparation"
     )
 
     try:
@@ -366,78 +404,105 @@ if uploaded_file:
             hr_part = project_sections[1]
 
         # -------------------------
-        # TECHNICAL
+        # TECHNICAL QUESTIONS
         # -------------------------
 
-        st.markdown(
-            "### 💻 Technical Questions"
-        )
+        with st.expander(
+            "💻 Technical Questions",
+            expanded=True
+        ):
 
-        for line in technical_part.split("\n"):
+            for line in technical_part.split("\n"):
 
-            if "-" in line:
+                if "-" in line:
 
-                question = (
-                    line.replace("-", "")
-                    .strip()
-                )
+                    question = (
+                        line.replace("-", "")
+                        .replace("*", "")
+                        .strip()
+                    )
 
-                st.info(question)
+                    if question:
 
-        # -------------------------
-        # PROJECT
-        # -------------------------
-
-        st.markdown(
-            "### 🚀 Project Questions"
-        )
-
-        for line in project_part.split("\n"):
-
-            if "-" in line:
-
-                question = (
-                    line.replace("-", "")
-                    .strip()
-                )
-
-                st.success(question)
+                        st.info(
+                            question
+                        )
 
         # -------------------------
-        # HR
+        # PROJECT QUESTIONS
         # -------------------------
 
-        st.markdown(
-            "### 👨‍💼 HR Questions"
-        )
+        with st.expander(
+            "🚀 Project Questions",
+            expanded=False
+        ):
 
-        for line in hr_part.split("\n"):
+            for line in project_part.split("\n"):
 
-            if "-" in line:
+                if "-" in line:
 
-                question = (
-                    line.replace("-", "")
-                    .strip()
-                )
+                    question = (
+                        line.replace("-", "")
+                        .replace("*", "")
+                        .strip()
+                    )
 
-                st.warning(question)
+                    if question:
+
+                        st.success(
+                            question
+                        )
+
+        # -------------------------
+        # HR QUESTIONS
+        # -------------------------
+
+        with st.expander(
+            "👨‍💼 HR Questions",
+            expanded=False
+        ):
+
+            for line in hr_part.split("\n"):
+
+                if "-" in line:
+
+                    question = (
+                        line.replace("-", "")
+                        .replace("*", "")
+                        .strip()
+                    )
+
+                    if question:
+
+                        st.warning(
+                            question
+                        )
 
     except Exception:
 
-        st.markdown(
-            interview_questions_ai
-        )
+        with st.expander(
+            "🤖 Raw AI Interview Output",
+            expanded=False
+        ):
+
+            st.markdown(
+                interview_questions_ai
+            )
+            
     # ==================================
     # LEARNING ROADMAP
     # ==================================
 
-    st.subheader(
-            "🗺️ Learning Roadmap"
-        )
+    with st.expander(
+        "🗺️ Learning Roadmap",
+        expanded=False
+    ):
 
-    for step in roadmap:
+        for step in roadmap:
 
-            st.success(step)
+            st.success(
+                step
+            )
     
     # ==================================
     # RESUME VS JD MATCHING
@@ -445,46 +510,116 @@ if uploaded_file:
 
     if jd_result:
 
-        st.subheader(
-            "🎯 Resume vs Job Match"
-        )
+        with st.expander(
+            "🎯 Resume vs Job Description Match",
+            expanded=True
+        ):
 
-        st.metric(
-            "Match Score",
-            f"{jd_result['score']}%"
-        )
-
-        st.markdown(
-            "### ✅ Matching Skills"
-        )
-
-        for skill in jd_result["matched"]:
-
-            st.success(
-                skill
+            st.metric(
+                "Match Score",
+                f"{jd_result['score']}%"
             )
 
-        st.markdown(
-            "### ❌ Missing Skills"
-        )
+            if jd_result["score"] >= 80:
 
-        for skill in jd_result["missing"]:
+                st.success(
+                    "Excellent Match"
+                )
 
-            st.warning(
-                skill
+            elif jd_result["score"] >= 60:
+
+                st.warning(
+                    "Good Match"
+                )
+
+            else:
+
+                st.error(
+                    "Low Match"
+                )
+
+            # -------------------------
+            # MATCHING SKILLS
+            # -------------------------
+
+            st.markdown(
+                "### ✅ Matching Skills"
             )
+
+            if jd_result["matched"]:
+
+                matched_text = " | ".join(
+                    jd_result["matched"]
+                )
+
+                st.success(
+                    matched_text
+                )
+
+            else:
+
+                st.info(
+                    "No matching skills found"
+                )
+
+            # -------------------------
+            # MISSING SKILLS
+            # -------------------------
+
+            st.markdown(
+                "### ❌ Missing Skills"
+            )
+
+            if missing_skills:
+
+                missing_text = " | ".join(
+                    missing_skills
+                )
+
+                st.warning(
+                    missing_text
+                )
+
+            else:
+
+                st.success(
+                    "No missing skills detected"
+                )
+                
+            # -------------------------
+            # SUGGESTIONS
+            # -------------------------
+
+            st.markdown(
+                "### 💡 Suggestions"
+            )
+
+            if jd_result["suggestions"]:
+
+                for suggestion in jd_result["suggestions"]:
+
+                    st.info(
+                        suggestion
+                    )
+
+            else:
+
+                st.success(
+                    "Your resume already matches the JD very well."
+                )
                 
     # ==================================
-    # AI FEEDBACK
+    # AI RESUME INSIGHTS
     # ==================================
 
-    st.subheader(
-        "🤖 AI Resume Feedback"
-    )
+    with st.expander(
+        "🤖 AI Resume Insights",
+        expanded=True
+    ):
 
-    st.markdown(
-        ai_feedback
-    )
+        st.markdown(
+            ai_feedback
+        )
 
         
     # ==================================
